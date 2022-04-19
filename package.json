@@ -1,0 +1,14 @@
+{
+  "name": "mortgage_service",
+  "version": "0.1.0",
+  "workspaces":[
+    "client",
+    "server"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run build --workspace=client",
+    "start:client": "npm run start --workspace=client",
+    "start:server": "npm run start --workspace=server"
+  }
+}
