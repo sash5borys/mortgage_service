@@ -3,7 +3,7 @@
   <section class="bank-list">
     <ul >
       <li v-for="bank in banksList" :key="bank.id">
-        <a class="bank-list__link" @click="selectedBank = bank">{{bank.name}}</a>
+        <a :class="['bank-list__link', { 'active': selectedBank ? selectedBank.id == bank.id : false }]" @click="selectedBank = bank">{{bank.name}}</a>
       </li>
     </ul>
   </section>
@@ -26,7 +26,7 @@ export default {
     }
   },
     async created(){
-     const data = await sender('http://127.0.0.1:8000/bank/read/0');
+     const data = await sender('/bank/read/0');
      this.banksList = data;
   }
 };

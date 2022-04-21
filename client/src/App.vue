@@ -66,7 +66,8 @@ button {
   text-decoration: none;
 }
 a:hover,
-button:hover {
+button:hover, 
+.active {
   opacity: 0.5;
 }
 button {

@@ -1,7 +1,7 @@
 'use strict';
 
-const db = require('./db.js');
-const { hashAsync } = require('./hash.js');
+const db = require('../db.js');
+const { hashAsync } = require('../hash.js');
 
 const users = db('users');
 

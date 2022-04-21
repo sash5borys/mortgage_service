@@ -5,18 +5,17 @@
         <th>Bank</th>
         <th>Amount</th>
         <th>Term(times)</th>
-        <th>Paid(times)</th>
         <th>Pay</th>
       </tr>
       <tr v-for="payment in paymentsList" :key="payment.id">
-        <td>{{ payment.bankId }}</td>
+        <td>{{ payment.bankName }}</td>
         <td>{{ payment.amount }}</td>
-        <td>{{ payment.term }}</td>
-        <td>{{ payment.times }}</td>
+        <td>{{ payment.count }}</td>
         <td>
           <button
+            :class="{ 'active': payment.amount < 1 || payment.term == payment.times }"
             @click="payNextLoan(payment)"
-            :disabled="payment.term == payment.times"
+            :disabled="payment.amount < 1 || payment.term == payment.times"
           >
             Pay next
           </button>
@@ -33,30 +32,41 @@ export default {
   name: "Cabinet",
   data() {
     return {
+      banksList: [],
       paymentsList: [],
     };
   },
   async created() {
-    const data = await sender("http://127.0.0.1:8000/payment/read/0");
-    this.paymentsList = data;
+    this.banksList = await sender("/bank/read/0");
+    const paymentsData = await sender("/payment/read/0");
+    this.paymentsList = this.supplementPayment(paymentsData, this.banksList);
   },
   methods: {
-    async payNextLoan({ ...curPayment }) {
+    supplementPayment(paymentsData, banksData){
+      return paymentsData.map(payment => {
+        const curBank = banksData.find(bank => bank.id == payment.bankId);
+        return {
+          ...payment,
+          bankName: curBank.name,
+          term: curBank.term
+        }; 
+      });
+    },
+    async payNextLoan(curPayment) {
       const nextPayment = await sender(
-        "http://127.0.0.1:8000/payment/create",
+        "/payment/create",
         "POST",
         {
           userId: 1,
           bankId: curPayment.bankId,
           amount: curPayment.monthlyAmount,
           monthlyAmount: curPayment.monthlyAmount,
-          totalAmount: curPayment.totalAmount,
-          term: curPayment.term,
-          times: curPayment.times + 1,
+          count: curPayment.count + 1,
           date: new Date().toLocaleString(),
         }
       );
-      this.paymentsList.push(nextPayment);
+      this.paymentsList.push(nextPayment)
+      this.paymentsList = this.supplementPayment(this.paymentsList, this.banksList)
     },
   },
 };

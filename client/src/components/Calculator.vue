@@ -14,12 +14,12 @@
           type="range"
           step="1"
           min="0"
-          :max="maximumLoan"
+          :max="curBank.maximumLoan"
           v-model="amountBorrowed"
         />
         <div class="calculator__controll__range-minmax">
           <span>0</span>
-          <span>{{ maximumLoan }}</span>
+          <span>{{ curBank.maximumLoan }}</span>
         </div>
       </div>
       <div class="calculator__control__bottom">
@@ -49,7 +49,7 @@
       </div>
       <div class="calculator__info__cell-info">
         <p class="calculator__info__title">Real annual interest rate, %</p>
-        <span class="calculator__info__sum">{{ term }}</span>
+        <span class="calculator__info__sum">{{ curBank.term }}</span>
       </div>
     </article>
   </section>
@@ -66,22 +66,18 @@ export default {
   data() {
     return {
       amountBorrowed: 0,
-      bankId: this.selectedBank.id,
-      interestRate: this.selectedBank.interestRate,
-      maximumLoan: this.selectedBank.maximumLoan,
-      minimumAvance: this.selectedBank.minimumAvance,
-      term: this.selectedBank.term,
+      curBank: this.selectedBank
     };
   },
   computed: {
     downPayment() {
-      return ((this.amountBorrowed / 100) * this.minimumAvance).toFixed(2);
+      return ((this.amountBorrowed / 100) * this.curBank.minimumAvance).toFixed(2);
     },
     loanPayment() {
       return this.amountBorrowed - this.downPayment;
     },
     interestProccent() {
-      return this.interestRate / 100;
+      return this.curBank.interestRate / 100;
     },
     monthlyRate() {
       return this.interestProccent / 12;
@@ -90,35 +86,30 @@ export default {
       return (
         (this.loanPayment *
           this.monthlyRate *
-          Math.pow(1 + this.monthlyRate, this.term)) /
-        (Math.pow(1 + this.monthlyRate, this.term) - 1)
+          Math.pow(1 + this.monthlyRate, this.curBank.term)) /
+        (Math.pow(1 + this.monthlyRate, this.curBank.term) - 1)
       ).toFixed(2);
     },
     totalPayment() {
-      this.monthlyPayment * this.term;
+      this.monthlyPayment * this.curBank.term;
     },
   },
   methods: {
     async takeLoan() {
-      await sender("http://127.0.0.1:8000/payment/create", "POST", {
+      console.log();
+      await sender("/payment/create", "POST", {
         userId: 1,
-        bankId: this.bankId,
+        bankId: this.curBank.id,
         amount: this.downPayment,
         monthlyAmount: this.monthlyPayment,
-        totalAmount: this.totalPayment,
-        term: this.term,
-        times: 1,
+        count: 1,
         date: new Date().toLocaleString(),
       });
     },
   },
   watch: {
     selectedBank(newBank) {
-      this.bankId = newBank.id;
-      this.interestRate = newBank.interestRate;
-      this.maximumLoan = newBank.maximumLoan;
-      this.minimumAvance = newBank.minimumAvance;
-      this.term = newBank.term;
+      this.curBank = newBank;
     },
   },
 };

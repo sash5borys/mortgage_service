@@ -2,6 +2,8 @@
 
 const http = require('http');
 
+const CLIENT_HOST = 'http://127.0.0.1:3000';
+
 const receiveArgs = async (req) => {
   const buffers = [];
   for await (const chunk of req) buffers.push(chunk);
@@ -24,10 +26,9 @@ module.exports = (routing, port) => {
     if (signature.includes('{')) args.push(await receiveArgs(req));
     console.log(`${socket.remoteAddress} ${method} ${url}`);
     const result = await handler(...args);
-    res.setHeader('X-Frame-Options', 'ALLOWALL');
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.end(JSON.stringify(result));
   }).listen(port);
 
